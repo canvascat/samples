@@ -61,6 +61,7 @@ button:hover {
 
 button[disabled] {
   color: #ccc;
+  cursor: not-allowed;
 }
 
 button[disabled]:hover {
@@ -124,7 +125,7 @@ img {
   max-width: 100%;
 }
 
-input[type=radio] {
+input[type='radio'] {
   position: relative;
   top: -1px;
 }
@@ -174,7 +175,7 @@ h1 span {
 }
 
 a {
-  color: #1D6EEE;
+  color: #1d6eee;
   font-weight: 300;
   text-decoration: none;
 }
@@ -198,7 +199,7 @@ a#viewSource {
 }
 
 div#errorMsg p {
-  color: #F00;
+  color: #f00;
 }
 
 div#links a {
@@ -263,5 +264,3 @@ ul {
     font-size: 20px;
   }
 }
-
-
