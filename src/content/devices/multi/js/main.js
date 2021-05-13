@@ -1,11 +1,3 @@
-/*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
-
 'use strict';
 
 const gumAudio = document.querySelector('audio.gum');
@@ -40,38 +32,43 @@ function gotDevices(deviceInfos) {
   for (let selector = 0; selector < allOutputSelectors.length; selector++) {
     const newOutputSelector = masterOutputSelector.cloneNode(true);
     newOutputSelector.addEventListener('change', changeAudioDestination);
-    allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector,
-        allOutputSelectors[selector]);
+    allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector, allOutputSelectors[selector]);
   }
 }
 
 navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 
-// Attach audio output device to the provided media element using the deviceId.
+/**
+ * Attach audio output device to the provided media element using the deviceId.
+ * @param {HTMLMediaElement} element
+ * @param {string} sinkId
+ * @param {HTMLSelectElement} outputSelector
+ */
 function attachSinkId(element, sinkId, outputSelector) {
-  if (typeof element.sinkId !== 'undefined') {
-    element.setSinkId(sinkId)
-        .then(() => {
-          console.log(`Success, audio output device attached: ${sinkId} to element with ${element.title} as source.`);
-        })
-        .catch(error => {
-          let errorMessage = error;
-          if (error.name === 'SecurityError') {
-            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-          }
-          console.error(errorMessage);
-          // Jump back to first output device in the list as it's the default.
-          outputSelector.selectedIndex = 0;
-        });
-  } else {
+  if (typeof element.sinkId === 'undefined') {
     console.warn('Browser does not support output device selection.');
+    return;
   }
+  // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/setSinkId
+  element.setSinkId(sinkId).then(() => {
+    console.log(`Success, audio output device attached: ${sinkId} to element with ${element.title} as source.`);
+  }, error => {
+    let errorMessage = error;
+    if (error.name === 'SecurityError') {
+      errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+    }
+    console.error(errorMessage);
+    // Jump back to first output device in the list as it's the default.
+    outputSelector.selectedIndex = 0;
+  });
 }
 
+/** @param {Event} event */
 function changeAudioDestination(event) {
   const deviceId = event.target.value;
   const outputSelector = event.target;
   // FIXME: Make the media element lookup dynamic.
+  // 事件冒泡路径 event.path/event.composedPath();
   const element = event.path[2].childNodes[1];
   attachSinkId(element, deviceId, outputSelector);
 }
@@ -83,16 +80,8 @@ function gotStream(stream) {
 }
 
 function start() {
-  if (window.stream) {
-    window.stream.getTracks().forEach(track => {
-      track.stop();
-    });
-  }
-  const constraints = {
-    audio: true,
-    video: true
-  };
-  navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(handleError);
+  window.stream && window.stream.getTracks().forEach(track => track.stop());
+  navigator.mediaDevices.getUserMedia({audio: true, video: true}).then(gotStream, handleError);
 }
 
 start();
